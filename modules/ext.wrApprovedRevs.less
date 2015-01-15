@@ -1,0 +1,89 @@
+/**
+ * CSS definitions for the WR Approved Revs extension
+ */
+
+@text-color: #80847c;
+
+.approvedrevs-banner {
+    border-width: 3px 0;
+    border-style: solid;
+    border-color: #e1efd0;
+    color: @text-color;
+    /* padding: 10px 0; */
+    margin-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+    .approvedrevs-banner {
+        /* padding: 20px; */
+        margin-bottom: 20px;
+    }
+}
+
+.ar-banner-title {
+  font-size: 18px;
+  padding-top: 10px;
+}
+@media (min-width: 768px) {
+  .ar-banner-title {
+    padding-top: 20px;
+  }
+}
+
+
+.approvedrevs-banner a {
+    color: @text-color; /** Override the default link color */
+
+	#content & {
+		text-decoration: none;
+	}
+}
+
+.ar-banner-logo {
+    float: right;
+    margin: 5px;
+}
+
+@media (min-width: 768px) {
+  .ar-banner-logo {
+    margin: 5px 15px;
+  }
+}
+
+.ar-banner-logo-israel {
+  /* @embed */
+  background-image: url( "images/Emblem_of_Israel_alternative.png");
+  width: 60px;
+  height: 75px;
+  background-repeat: no-repeat;
+}
+
+.ar-banner-logo-holocaust_authority {
+  /* @embed */
+  background-image: url( "images/Logo_of_Holocaust_Authority.png");
+  width: 74px;
+  height: 75px;
+  background-repeat: no-repeat;
+}
+
+.ar-page-status {
+  font-size: 14px;
+  padding-bottom: 10px;
+}
+@media (min-width: 768px) {
+  .ar-page-status {
+    padding-bottom: 20px;
+  }
+}
+
+.ar-page-status a {
+   border-bottom: 1px dotted #CCC9C9;
+}
+
+.ar-page-status a:hover {
+	border-bottom-style: solid;
+
+	#content & {
+  		text-decoration: none;
+	}
+}
