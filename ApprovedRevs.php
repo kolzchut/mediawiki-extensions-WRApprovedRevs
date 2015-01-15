@@ -91,7 +91,7 @@ $wgLogActionsHandlers['approvedrevs/*'] = 'LogFormatter';
 // resources
 $wrApprovedRevsResourceTemplate = array(
 	'localBasePath' => __DIR__ . '/modules',
-	'remoteExtPath' => 'WRApprovedRevs/modules',
+	'remoteExtPath' => 'WikiRights/WRApprovedRevs/modules',
 	'group' => 'ext.wrApprovedRevs',
 );
 
