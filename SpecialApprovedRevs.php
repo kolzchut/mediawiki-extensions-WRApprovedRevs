@@ -4,9 +4,12 @@
  * Special page that displays various lists of pages that either do or do
  * not have an approved revision.
  *
+ * @author Dror S. [FFS]
  * @author Yaron Koren
  */
 class SpecialApprovedRevs extends SpecialPage {
+
+	protected $pager;
 
 	/**
 	 * Constructor
@@ -21,144 +24,182 @@ class SpecialApprovedRevs extends SpecialPage {
 		}
 
 		$this->setHeaders();
-		list( $limit, $offset ) = wfCheckLimits();
-		
-		$mode = $this->getRequest()->getVal( 'show' );
-		$organization = $this->getRequest()->getVal( 'organization' );
-		//$group = $this->getRequest()->getVal( 'group' );
+		$this->getOutput()->addModuleStyles( 'mediawiki.special' );
+
+		$request = $this->getRequest();
+
+		$mode = $request->getVal( 'show' );
+		$organization = $request->getVal( 'organization' );
+		//$group = $request->getVal( 'group' );
 		$group = null;
-		
-		$rep = new SpecialApprovedRevsPage( $mode, $organization, $group );
-		
-		if ( method_exists( $rep, 'execute' ) ) {
-			return $rep->execute( $query );
+
+		$this->pager = new ApprovedRevsPager( $this, $mode, $organization, $group );
+
+		$this->getOutput()->addHTML( $this->pager->makeFilterForm() );
+
+		if ( $this->pager->getNumRows() ) {
+			$this->getOutput()->addParserOutputContent( $this->pager->getFullOutput() );
 		} else {
-			return $rep->doQuery( $offset, $limit );
+			$this->getOutput()->addWikiMsg( 'approvedrevs-pager-empty' );
 		}
+
 	}
-	
+
 }
 
-class SpecialApprovedRevsPage extends QueryPage {
-	
+class ApprovedRevsPager extends TablePager {
 	protected $mMode;
 	protected $mOrganization;
 	protected $mGroup;
 
 	/** @const */
-	protected $mAllowedModes = array( 'notlatest', 'approved', 'unapproved', 'all' );
+	protected $mAllowedModes = array( 'all', 'approved', 'notlatest', 'unapproved' );
 
-	public function __construct( $mode, $organization, $group ) {
+	public function __construct( $page, $mode, $organization, $group ) {
+		parent::__construct( $page->getContext() );
+
+		$this->mMode = in_array( $mode, $this->mAllowedModes ) ? $mode : 'notlatest';
+		$this->mOrganization = $organization;
+		$this->mGroup = $group;
+
+		$this->mDefaultDirection = IndexPager::DIR_ASCENDING;
 		if ( $this instanceof SpecialPage ) {
 			parent::__construct( 'ApprovedRevs' );
 		}
-		
-		if( !in_array( $mode, $this->mAllowedModes ) ) {
-			$mode = 'notlatest';
-		}
-		$this->mMode = $mode;
-		$this->mOrganization = $organization;
-		$this->mGroup = $group;		
+
+
+
 		//@TODO: need to get group ID from group name! Is there such a function?
 		//Maybe get the entire group list with names, and create a select in the filter form.
 	}
 
-	function getName() {
-		return 'ApprovedRevs';
-	}
-
-	function isExpensive() { return false; }
-
-	function isSyndicated() { return false; }
-
-	/** get count(*) for list */
-	function getListCount( $mode, $organization, $group ) {
-		$query = self::getQueryStructure( $mode, $organization, $group );
-		$query['fields'] = 'COUNT(*) AS count';
-		$dbr = wfGetDB( DB_SLAVE );
-		
-		$res = $dbr->select(
-			$query['tables'],
-			$query['fields'], 
-			$query['conds'],
-			__METHOD__,
-			array(),
-			$query['join_conds']
-		);
-		
-		$row = $res->fetchRow();
-		
-		return $row['count'];
-	}
-	
-	
-	function getPageHeader() {
-		global $wgScript;
-
-		// show the names of the three lists of pages, with the one
-		// corresponding to the current "mode" not being linked
-		
-		$t = $this->getTitle();
-		$organization = $this->mOrganization;
-		$group = $this->mGroup;
-
-		$navLine = wfMessage( 'approvedrevs-view' ) . ' ';
-		
-		
-		foreach( $this->mAllowedModes as $mode ) {
-			$msg = wfMessage( 'approvedrevs-' . $mode . 'pages' );
-			if( $this->mMode == $mode ) {
-				$navLine .= Xml::element( 'strong',
-					null,
-					$msg
-				);
-			} else {
-				$navLine .= Xml::element( 'a',
-						array( 'href' => $t->getLocalURL( array( 'show' => $mode, 'organization' => $organization, 'group' => $group ) ) ),
-						$msg
-					);
-			}
-			
-			$navLine .= ' (' . $this->getListCount( $mode, $organization, $group ) . ')';	
-			
-			if( $mode !== end( $this->mAllowedModes ) ) {
-				$navLine .= ' | ';
-			}
-		}
-		
-		$navLine = Xml::tags( 'p', null, $navLine ) . "\n";
-		
-		// Show a filtering option
-		$filterForm = Xml::openElement( 'form', array( 'method' => 'get', 'action' => $wgScript ) ) .
+	function makeFilterForm() {
+		$filterForm = Xml::openElement( 'form', array(
+			'method' => 'get',
+			'action' => $this->getConfig()->get( 'Script' )
+		) );
+		$filterForm .=
 			Xml::openElement( 'fieldset' ) .
-			Xml::element( 'legend', null, $this->msg( 'approvedrevs-filter-legend' )->text() ) .
-			Html::hidden( 'title', $t->getPrefixedText() ) .
-			Html::hidden( 'show', $this->mMode ) .
-			Xml::inputLabel( $this->msg( 'approvedrevs-filter-field-org' )->text(), 'organization', 'filter-field-org', null, $organization ) . ' ' .
-			//Xml::inputLabel( $this->msg( 'approvedrevs-filter-field-group' )->text(), 'group', 'filter-field-group', null, $group ) . ' ' .
+			Xml::element(
+			  'legend', null, $this->msg( 'approvedrevs-filter-legend' )->text()
+			) .
+			Html::hidden( 'title', $this->getTitle()->getPrefixedText() ) .
+			// Html::hidden( 'show', $this->mMode ) .
+			Xml::inputLabel(
+			  $this->msg( 'approvedrevs-filter-field-org' )->text(),
+			  'organization', 'filter-field-org', null, $this->mOrganization
+			) . ' ';
+			/*
+                Xml::inputLabel(
+                    $this->msg('approvedrevs-filter-field-group' )->text(),
+                    'group', 'filter-field-group', null, $group ) . ' ' .
+			*/
+
+		$filterForm .= $this->getModeSelector();
+		$filterForm .=
 			Xml::submitButton( $this->msg( 'approvedrevs-filter-field-submit' )->text() ) .
 			Xml::closeElement( 'fieldset' ) .
 			Xml::closeElement( 'form' );
 
-		return $filterForm . $navLine;
-		
+		return $filterForm;
 	}
 
 	/**
-	 * Set parameters for standard navigation links.
+	 * Creates the <select> input of the mode
+	 * @return string Formatted HTML
 	 */
-	function linkParameters() {
-		$params = array();
-		$params['show'] = $this->mMode;	
-		
-		return $params;
+	protected function getModeSelector() {
+		$options = array();
+
+
+		foreach ( $this->mAllowedModes as $mode ) {
+			$text = $this->msg( "approvedrevs-{$mode}pages" );
+
+			$options[] = Html::element(
+				'option', array(
+					'value'    => $mode,
+					'selected' => ( $mode === $this->mMode ),
+				), $text
+			);
+		}
+
+		$ret = '';
+		$ret .= Html::element(
+				'label', array(
+				'for' => 'filter-mode-selector',
+			), 'סטטוס'
+		) . '&#160;';
+
+		// Wrap options in a <select>
+		$ret .= Html::rawElement(
+			'select',
+			array( 'id' => 'filter-mode-selector', 'name' => 'show' ),
+			implode( "\n", $options )
+		);
+
+		return $ret;
 	}
 
-	function getPageFooter() {
+
+	/**
+	 * Mostly copied from SpecialProtectedPages
+	 *
+	 * @param string $field
+	 * @param string $value
+	 * @return string
+	 * @throws MWException
+	 */
+	function formatValue( $field, $value ) {
+		/** @var $row object */
+		$row = $this->mCurrentRow;
+		$title = Title::newFromId( $row->id );
+		$pageLink = Linker::link( $title );
+
+		switch ( $field ) {
+			case 'id':
+				$formatted = $pageLink;
+				break;
+			case 'rev_id':
+				if ( $value === null ) {
+					$formatted = 'לא אושר אף פעם';
+				} else {
+					$formatted = ( $row->rev_id === $row->latest_id ) ? 'מאושר'
+						: 'לא מאושר ' . $this->getDiffLink( $title, $row->latest_id, $row->rev_id );
+				}
+				break;
+			case 'ap_review_timestamp':
+				$formatted = ( $row->rev_id === $row->latest_id )
+					? $formatted = $this->getLanguage()->userTimeAndDate( $value, $this->getUser() )
+					: '-';
+				break;
+
+			default:
+				$formatted = $value;
+		}
+
+		return $formatted;
 	}
 
-	public static function getNsConditionPart( $ns ) {
-		return 'p.page_namespace = ' . $ns;
+	function getFieldNames() {
+		$headers = null;
+
+		$headers = array(
+			'id' => 'approvedrevs-header-page',
+			'rev_id' => 'approvedrevs-header-status',
+			'ap_organization' => 'approvedrevs-header-organization',
+			'ap_review_timestamp' => 'approvedrevs-header-timestamp',
+			//'log_approvedby' => 'approvedrevs-header-approvedby',
+		);
+
+		if ( $this->mMode === 'notlatest' || $this->mMode === 'unapproved' ) {
+			unset( $headers['ap_review_timestamp'] );
+		}
+
+		foreach ( $headers as $key => $val ) {
+			$headers[$key] = $this->msg( $val )->text();
+		}
+
+		return $headers;
 	}
 
 	static function getBaseQueryStructure() {
@@ -169,10 +210,13 @@ class SpecialApprovedRevsPage extends QueryPage {
 			),
 			'fields' => array(
 				'p.page_id AS id',
-				'ap.ap_approved_rev_id AS rev_id',
+				'ap_approved_rev_id AS rev_id',
 				'p.page_latest AS latest_id',
-				'ap.ap_review_on_behalf as on_behalf',
-				'ap.ap_review_on_behalf_comments as on_behalf_comments',
+				'ap_organization',
+				'ap_review_timestamp',
+				'ap_review_user',
+				'ap_review_on_behalf as on_behalf',
+				'ap_review_on_behalf_comments as on_behalf_comments',
 			),
 			'join_conds' => array(
 				'p' => array(
@@ -180,31 +224,37 @@ class SpecialApprovedRevsPage extends QueryPage {
 				),
 			),
 		);
-		
+
 		return $baseQuery;
 	}
-	
-	static function getQueryStructure( $mode, $organization = null, $group = null ) {
-	  $baseQuery = self::getBaseQueryStructure();
-	  $conds = array();
 
-	  switch( $mode ) {
-			case 'unapproved':	$conds[] = 'ap.ap_approved_rev_id IS NULL'; break;
-			case 'approved': 	$conds[] = 'ap.ap_approved_rev_id = p.page_latest'; break;
-			case 'notlatest':	$conds[] = '(ap.ap_approved_rev_id IS NULL) OR (p.page_latest != ap.ap_approved_rev_id)'; $break; 
-			case 'all': 		/* Fall through to default */
+	static function getQueryStructure( $mode, $organization = null, $group = null ) {
+		$baseQuery = self::getBaseQueryStructure();
+		$conds = array();
+
+		switch ( $mode ) {
+			case 'unapproved':
+				$conds[] = 'ap.ap_approved_rev_id IS NULL';
+				break;
+			case 'approved':
+				$conds[] = 'ap.ap_approved_rev_id = p.page_latest';
+				break;
+			case 'notlatest':
+				$conds[] = '(ap.ap_approved_rev_id IS NULL) OR (p.page_latest != ap.ap_approved_rev_id)';
+				break;
+			case 'all': // Fall through to default
 			default:
 		}
 
 		$nsConds = self::getNamespacesConds();
-		if( $nsConds ) {
+		if ( $nsConds ) {
 			$conds[] = $nsConds;
 		}
-		
+
 		if ( $organization ) {
 			$conds[] = "ap.ap_organization = '{$organization}'";
 		}
-		
+
 		if ( $group ) {
 			$conds[] = "ap.ap_user_group = '{$group}'";
 		}
@@ -216,115 +266,90 @@ class SpecialApprovedRevsPage extends QueryPage {
 
 	function getNamespacesConds() {
 		global $wgApprovedRevsNamespaces;
-		
+
 		$conds = null;
-		if( !empty( $wgApprovedRevsNamespaces ) ) {
+		if ( !empty( $wgApprovedRevsNamespaces ) ) {
 			$namespacesString = '(' . implode( ',', $wgApprovedRevsNamespaces ) . ')';
 			$conds = "p.page_namespace IN $namespacesString";
 		}
 
 		return $conds;
 	}
-	
+
 	/**
 	 * Used as of MW 1.17.
-	 * 
+	 *
 	 * (non-PHPdoc)
 	 * @see QueryPage::getSQL()
-	 */	
-	function getQueryInfo() {		
+	 */
+	function getQueryInfo() {
 		return $this->getQueryStructure( $this->mMode, $this->mOrganization, $this->mGroup );
 	}
 
-	function getOrder() {
-		return ' ORDER BY p.page_namespace, p.page_title ASC';
+
+	/**
+	 * get count(*) for list
+	 *
+	 * @param $mode
+	 * @param $organization
+	 * @param $group
+	 *
+	 * @return mixed
+	 */
+	function getListCount( $mode, $organization, $group ) {
+		$query = self::getQueryStructure( $mode, $organization, $group );
+		$query['fields'] = 'COUNT(*) AS count';
+		$dbr = wfGetDB( DB_SLAVE );
+
+		$res = $dbr->select(
+			$query['tables'],
+			$query['fields'],
+			$query['conds'],
+			__METHOD__,
+			array(),
+			$query['join_conds']
+		);
+
+		$row = $res->fetchRow();
+
+		return $row['count'];
 	}
 
-	function getOrderFields() {
-		return array( 'p.page_namespace', 'p.page_title' );
+
+	function getDefaultSort() {
+		return 'ap_organization';
 	}
 
-	function sortDescending() {
+	function isFieldSortable( $field ) {
+		/*
+		 switch ( $field ) {
+			case 'ap_review_timestamp':
+			case 'ap_organization':
+				return true;
+		}
+		*/
+		// Since there is a small number of entries for now, we use JS sorting instead
+		// no index for sorting exists
 		return false;
 	}
 
-	function formatResult( $skin, $result ) {
-		$title = Title::newFromId( $result->id );
-		$pageLink = Linker::link( $title );
-		
-		if ( $this->mMode == 'unapproved' ) {
-			global $egApprovedRevsShowApproveLatest;
-			
-			$line = $pageLink;
-			if ( $egApprovedRevsShowApproveLatest &&
-				ApprovedRevs::userCanApprovePage( $title , $skin->getUser() ) ) {
-				$line .= ' (' . Xml::element( 'a',
-					array( 'href' => $title->getLocalUrl(
-						array(
-							'action' => 'approveprojectpage',
-							//'oldid' => $result->latest_id
-						)
-					) ),
-					wfMessage( 'approvedrevs-approvelatest' )
-				) . ')';
-			}
-			
-			return $line;
-		} elseif( $this->mMode == 'notlatest' ) {
-			if( !is_null( $result->rev_id ) ) {  
-				$diffLink = Xml::element( 'a',
-					array( 'href' => $title->getLocalUrl(
-						array(
-							'diff' => $result->latest_id,
-							'oldid' => $result->rev_id
-						)
-					) ),
-					wfMessage( 'approvedrevs-difffromlatest' )
-				);
-				return "$pageLink ($diffLink)";
-			} else {
-				return $pageLink;	
-			}
-		} elseif( $this->mMode == 'approved' ) { // main mode (pages with an approved revision)
-			global $wgOut, $wgLang;
-			
-			$additionalInfo = Xml::element( 'span',
-				array (
-					'class' => $result->rev_id == $result->latest_id ? 'approvedRevIsLatest' : 'approvedRevNotLatest'
-				)
-				//wfMessage( 'approvedrevs-revisionnumber', $result->rev_id )
-			);
-
-			// Get data on the most recent approval from the
-			// 'approval' log, and display it if it's there.
-			$sk = $this->getSkin();
-			$loglist = new LogEventsList( $sk, $wgOut );
-			$pager = new LogPager( $loglist, 'approvedrevs', '', $title->getText() );
-			$pager->mLimit = 1;
-			$pager->doQuery();
-			$row = $pager->mResult->fetchObject();
-			
-			if ( !empty( $row ) ) {
-				$timestamp = $wgLang->timeanddate( wfTimestamp( TS_MW, $row->log_timestamp ), true );
-				$date = $wgLang->date( wfTimestamp( TS_MW, $row->log_timestamp ), true );
-				$time = $wgLang->time( wfTimestamp( TS_MW, $row->log_timestamp ), true );
-				$userLink = Linker::userLink( $row->log_user, $row->user_name );
-				$additionalInfo .= wfMessage(
-					( is_null( $result->on_behalf ) ? 'approvedrevs-approvedby' : 'approvedrevs-approvedby-onbehalf' ),
-					$userLink,
-					$timestamp,
-					$result->on_behalf,
-					$result->on_behalf_comments
-					//$row->user_name,
-					//$date,
-					//$time
-				)->text();
-			}
-			
-			return "$pageLink ($additionalInfo)";
-		}
-		// implicit else:
-		return "$pageLink";
+	public function getTableClass() {
+		return parent::getTableClass() . ' sortable';
 	}
-	
+
+	protected static function getDiffLink( Title $title, $current_rev_id, $approved_rev_id ) {
+		$href = $title->getLocalUrl( array(
+				'diff' => $current_rev_id,
+				'oldid' => $approved_rev_id
+			)
+		);
+		$diffLink = Xml::element(
+			'a',
+			array( 'href' => $href ),
+			wfMessage( 'approvedrevs-special-difflink' )
+		);
+
+		return $diffLink;
+	}
+
 }

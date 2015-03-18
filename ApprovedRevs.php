@@ -46,6 +46,11 @@ $wgHooks['LoadExtensionSchemaUpdates'][] = 'ApprovedRevsHooks::describeDBSchema'
 $wgHooks['ArticleViewHeader'][] = 'ApprovedRevsHooks::onArticleViewHeader';
 $wgHooks['SkinTemplateNavigation'][] = 'ApprovedRevsHooks::onSkinTemplateNavigation';
 $wgHooks['PageContentSaveComplete'][] = 'ApprovedRevsHooks::onPageContentSaveComplete';
+//$wgHooks['ParserAfterTidy'][] = 'ApprovedRevsHooks::onParserAfterTidy';
+$wgHooks['ContentAlterParserOutput'][] = 'ApprovedRevsHooks::onContentAlterParserOutput';
+
+
+
 
 // page actions
 $wgActions['assigntoproject'] = 'AssignToProjectAction';
@@ -87,6 +92,9 @@ $wgLogTypes[] = 'approvedrevs';
 $wgLogRestrictions['approvedrevs'] = 'edit';
 $wgLogActionsHandlers['approvedrevs/*'] = 'LogFormatter';
 
+
+// Tracking category for pages
+$wgTrackingCategories[] = 'approvedrevs-tracking-category';
 
 // resources
 $wrApprovedRevsResourceTemplate = array(

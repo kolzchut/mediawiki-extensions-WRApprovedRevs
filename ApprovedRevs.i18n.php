@@ -19,14 +19,14 @@ $messages['en'] = array(
 	'btn-reassigntoproject' => 'שינוי שיוך',
 	'approvedrevs-form-save' => 'שמור שיוך',
 	'approvedrevs-form-error-nochange' => 'שגיאה: לא עשית כל שינוי.',
-	'approvedrevs-form-error-noproject' => 'הדף עדיין אינו משוייך - חובה להגדיר פרויקט.',	
+	'approvedrevs-form-error-noproject' => 'הדף עדיין אינו משוייך - חובה להגדיר פרויקט.',
 	'assigntoproject-main'    => 'פרטי שיוך',
 
 	'approveprojectpage'		  => 'אישור גרסה זו של הדף',
 	'approveprojectpage-onbehalf'	=> 'אישור בשם אדם אחר (שדות חובה)',
 	'approveprojectpage-comments'	=> 'יש לך הערות?',
 
-	'group-projectassigner'         => 'מנהלי מיזם',	
+	'group-projectassigner'         => 'מנהלי מיזם',
 	'group-projectassigner-member'  => '{{GENDER:$1|מנהל|מנהלת}} מיזם',
 	#'grouppage-projectassigner'    => '{{ns:project}}:Project assigners',
 	'group-projectdelegate'         => 'מינהלת מיזם ניצולי שואה',
@@ -38,8 +38,6 @@ $messages['en'] = array(
 	'right-approveprojectonbehalf'         => 'אישור גרסה של דף בשם מישהו אחר',
 	'right-seeprojectstatusalways'         => 'הצגת באנר וסטטוס הדף למרות הגבלה לחברי הפרויקט',
 
-	
-	
 	/* For the special page (?) */
 	'approvedrevs' => 'פרויקטים',
 	'approvedrevs-approvedpages' => 'דפים מאושרים',
@@ -58,9 +56,23 @@ $messages['en'] = array(
 	'approvedrevs-filter-field-org'	=> 'ארגון:',
 	'approvedrevs-filter-field-group'	=> 'קבוצה אחראית:',
 	'approvedrevs-filter-field-submit' => 'הצגה',
-	
+	'approvedrevs-pager-empty' => 'אין כרגע דפים המתאימים לסינון הנבחר.',
+
+	'approvedrevs-header-page' => 'דף',
+	'approvedrevs-header-status' => 'סטטוס',
+	'approvedrevs-header-organization' => 'שיוך',
+	'approvedrevs-header-timestamp' => 'זמן אישור',
+	'approvedrevs-header-approvedby' => 'אושר ע"י',
+
+	'approvedrevs-special-difflink' => '({{MediaWiki:diff}})',
+
+	'approvedrevs-tracking-category' => 'דפים במערכת האישורים',
+	'approvedrevs-tracking-category-desc' => 'דפים ששוייכו למיזם כלשהו במערכת האישורים',
+	'approvedrevs-tracking-category-approved' => 'דפים מאושרים',
+	'approvedrevs-tracking-category-unapproved' => 'דפים לא מאושרים',
+
 	/**
-	 * Approval form		
+	 * Approval form
 	 */
 	'ar-approvalform-generalerror' => 'לא ניתן לבצע פעולה זו בדף זה.',
 	'ar-approvalform-pageunassigned' => 'לא ניתן לאשר דף זה מכיוון שאינו שייך לאף פרויקט.',
@@ -68,8 +80,8 @@ $messages['en'] = array(
 
 	'ar-approvalform-badaccess' => 'שגיאה בהרשאות',
 	'ar-approvalform-badaccess-group' => 'אישור העמוד מוגבל למשתמשים בקבוצה הבאה: $1.',
-	
-	
+
+
 	// Logging
 	'log-name-approvedrevs' => 'יומן דפי פרויקטים',
 	'log-description-approvedrevs' => 'יומן זה שומר שיוך של דפים לפרויקטים והיסטוריית אישורים.',
