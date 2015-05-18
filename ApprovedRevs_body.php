@@ -6,7 +6,6 @@
  * @file
  * @ingroup Extensions
  *
- * @author Dror Snir
  */
 class ApprovedRevs {
 

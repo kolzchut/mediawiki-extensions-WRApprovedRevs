@@ -4,8 +4,6 @@
  * Special page that displays various lists of pages that either do or do
  * not have an approved revision.
  *
- * @author Dror S. [FFS]
- * @author Yaron Koren
  */
 class SpecialApprovedRevs extends SpecialPage {
 

@@ -7,7 +7,6 @@
  * @file
  * @ingroup Extensions
  *
- * @author Dror Snir
  */
 class ApprovedRevsHooks {
 

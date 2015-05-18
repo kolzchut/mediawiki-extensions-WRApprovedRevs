@@ -7,8 +7,9 @@ if ( !defined( 'MEDIAWIKI' ) ) die();
  * @ingroup Extensions
  * @compat >= MW 1.21
  *
- * @author Dror Snir
- * Largely based on Extension:ApprovedRevs by Yaron Koren.
+ * @author Dror S. [FFS]
+ * @copyright © 2015 Dror S. & Kol-Zchut Ltd.
+ * Loosely based on Extension:ApprovedRevs by Yaron Koren.
  */
 
 define( 'APPROVED_REVS_VERSION', '0.1.0' );
@@ -18,7 +19,7 @@ $wgExtensionCredits['other'][] = array(
 	'path'            => __FILE__,
 	'name'            => 'Approved Revisions For Kol-Zchut',
 	'version'         => APPROVED_REVS_VERSION,
-	'author'          => 'Dror S. ([http://www.kolzchut.org.il Kol-Zchut])',
+	'author'          => 'Dror S. [FFS] ([http://www.kolzchut.org.il Kol-Zchut])',
 	'url'             => 'http://www.kolzchut.org.il/he/Extension:WRApproved_Revs',
 	'descriptionmsg'  => 'approvedrevs-desc'
 );

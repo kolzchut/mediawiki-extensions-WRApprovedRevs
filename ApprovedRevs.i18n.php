@@ -9,7 +9,7 @@
 $messages = array();
 
 /** English
- * @author Dror Snir
+ * @author Dror S. [FFS]
  */
 $messages['en'] = array(
 	'approvedrevs-desc' => 'מערכת ניהול אישורים לדפים',
