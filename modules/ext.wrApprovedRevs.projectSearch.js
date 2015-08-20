@@ -1,6 +1,6 @@
 ( function ( mw, $ ) {
     /* global mediaWiki */
-    "use strict";
+    'use strict';
 		var $form, page, cookieName, cookieVal, isSearchPage;
 
 		// Read filter toggle cookie

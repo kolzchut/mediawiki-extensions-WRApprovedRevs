@@ -103,6 +103,13 @@ $messages['en'] = array(
 --><span class="ar-banner-logo ar-banner-logo-israel"></span><!--
 --><span class="ar-banner-logo ar-banner-logo-holocaust_authority"></span><!--
 --><div class="ar-banner-title">המידע מוגש כחלק [[המיזם המשותף לזכויות ניצולי השואה|מהמיזם המשותף]] עם הרשות לזכויות ניצולי השואה</div><!--
+--><searchbox>
+placeholder=איתור מידע בנוגע לזכויות ניצולי שואה
+buttonlabel=
+category=זכויות ניצולי שואה
+internal=yes
+mobile=no
+</searchbox><!--
 --></div>',
 
 );

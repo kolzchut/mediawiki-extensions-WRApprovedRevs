@@ -12,7 +12,7 @@ if ( !defined( 'MEDIAWIKI' ) ) die();
  * Loosely based on Extension:ApprovedRevs by Yaron Koren.
  */
 
-define( 'APPROVED_REVS_VERSION', '0.1.0' );
+define( 'APPROVED_REVS_VERSION', '0.1.1' );
 
 // credits
 $wgExtensionCredits['other'][] = array(
@@ -113,4 +113,6 @@ $wgResourceModules['ext.wrApprovedRevs.projectSearch'] = $wrApprovedRevsResource
 	'scripts'      => 'ext.wrApprovedRevs.projectSearch.js',
 	'dependencies' => array( 'jquery.cookie' ),
 );
+
+unset( $wrApprovedRevsResourceTemplate );
 
