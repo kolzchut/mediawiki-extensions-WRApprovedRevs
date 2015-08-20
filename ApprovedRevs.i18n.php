@@ -105,9 +105,11 @@ $messages['en'] = array(
 --><div class="ar-banner-title">המידע מוגש כחלק [[המיזם המשותף לזכויות ניצולי השואה|מהמיזם המשותף]] עם הרשות לזכויות ניצולי השואה</div><!--
 --><searchbox>
 placeholder=איתור מידע בנוגע לזכויות ניצולי שואה
-buttonlabel=
+hiddenbuttonlabel=yes
+elementsize=small
 category=זכויות ניצולי שואה
 internal=yes
+widthclasses=col-md-7 col-sm-8
 mobile=no
 </searchbox><!--
 --></div>',
