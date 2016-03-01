@@ -50,13 +50,15 @@ class ApprovedRevsHooks {
 		$isWatch, $section, $flags, $revision, $status, $baseRevId
 	) {
 
-		if ( !is_null( $revision ) ) { // The user actually changed the text
-			$title = $article->getTitle();
-			$oldRevisionId = $title->getPreviousRevisionID( $revision->getId() );
+		$title = $article->getTitle();
+		$oldRevisionId = $revision->getParentId();
 
-			if ( ApprovedRevs::getApprovedRevID( $title ) == $oldRevisionId ) {
-				ApprovedRevs::logUnapprovedSave( $title, $user, $revision->getId() );
-			}
+		if( !is_null( $revision ) // The user actually changed the text
+		    && $oldRevisionId !== null // There's actually a previous revision
+		    && ApprovedRevs::isAssignedToProject( $title )
+			&& ApprovedRevs::getApprovedRevID( $title ) === $oldRevisionId  // said prev revision was approved
+		) {
+			ApprovedRevs::logUnapprovedSave( $title, $user, $revision->getId() );
 		}
 
 		return true;

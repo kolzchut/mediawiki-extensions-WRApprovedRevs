@@ -469,7 +469,7 @@ class ApprovedRevs {
 		$revID = $dbr->selectField(
 			'approved_pages', 'ap_approved_rev_id', array( 'ap_page_id' => $pageID )
 		);
-		self::$mApprovedRevIdForPage[ $pageID ] = $revID;
+		self::$mApprovedRevIdForPage[ $pageID ] = intval( $revID );
 
 		return $revID;
 	}
