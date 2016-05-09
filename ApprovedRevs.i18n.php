@@ -37,6 +37,7 @@ $messages['en'] = array(
 	'right-assigntoproject'         => 'שיוך דף לפרויקט',
 	'right-approveprojectonbehalf'         => 'אישור גרסה של דף בשם מישהו אחר',
 	'right-seeprojectstatusalways'         => 'הצגת באנר וסטטוס הדף למרות הגבלה לחברי הפרויקט',
+	'right-auto-reapproval-on-save' => 'שמירת דף בלי הוצאה מאישור ',
 
 	/* For the special page (?) */
 	'approvedrevs' => 'פרויקטים',

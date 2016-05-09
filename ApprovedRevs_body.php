@@ -153,6 +153,8 @@ class ApprovedRevs {
 
 		$approvalStatus = array();
 		$dbr = wfGetDB( DB_SLAVE );
+
+		// @fixme do a single select for all fields instead of multiple selectField()
 		$approvalStatus[ 'user' ] = $dbr->selectField(
 			'approved_pages', 'ap_review_user', array( 'ap_page_id' => $pageID )
 		);
@@ -172,11 +174,9 @@ class ApprovedRevs {
 	}
 
 	public static function getApprovalStatusMsg( Title $title, User $user ) {
-		global $wgLang;    // Necessary evil?
-
 		if ( self::isThisRevisionApproved( $title ) ) {
 			$approvalStatus = self::getApprovalStatus( $title );
-			$datetime  = $wgLang->userTimeAndDate( $approvalStatus[ 'time' ], $user );
+			$datetime = $title->getPageViewLanguage()->userTimeAndDate( $approvalStatus[ 'time' ], $user );
 			$msg = 'אושר ע"י ' . User::whoIs( $approvalStatus[ 'user' ] );
 			$msg .= ' ב-' . $datetime;
 
@@ -291,9 +291,11 @@ class ApprovedRevs {
 
 
 	public static function logPageApproval( Title $title, User $user, $on_behalf, $comments ) {
-		$article           = Article::newFromId( $title->getArticleID() );
-		$approved_rev_id   = ( $article->isCurrent() ? $article->getRevIdFetched(
-		) : $article->getOldID() );
+		$article = Article::newFromID( $title->getArticleID() );
+		$approved_rev_id = $article->isCurrent() ?
+			$article->getRevIdFetched()
+			: $article->getOldID();
+
 		$approved_rev_link = Linker::link(
 			$title, $approved_rev_id, array(), array( 'oldid' => $approved_rev_id )
 		);
@@ -322,7 +324,7 @@ class ApprovedRevs {
 	public static function savePageApprovalInDB(
 		Title $title, User $user, $on_behalf = null, $on_behalf_comments = null
 	) {
-		$dbr            = wfGetDB( DB_MASTER );
+		$dbw            = wfGetDB( DB_MASTER );
 		$page_id        = $title->getArticleID();
 		$current_rev_id = self::getThisRevisionID( $title );
 
@@ -332,7 +334,7 @@ class ApprovedRevs {
 		$approvalStatus[ 'on_behalf' ]      = $on_behalf;
 		$approvalStatus[ 'on_behalf_text' ] = $on_behalf_comments;
 
-		$dbr->update(
+		$dbw->update(
 			'approved_pages',
 			array(
 				'ap_approved_rev_id'           => $current_rev_id,
@@ -351,9 +353,30 @@ class ApprovedRevs {
 		return true;
 	}
 
-	public static function logUnapprovedSave( Title $title, User $user, $rev_id ) {
-		$article = Article::newFromId( $title->getArticleID() );
+	/*
+	 * Update the approved revision ID without changing any of the previous approval details.
+	 * While this may cause some inconsistency between the approval timestamp and the approved
+	 * revision timestamp, this is fine in terms of business logic.
+	 * We do not log this change.
+	 */
+	public static function performAutoReapproval( Title $title, $rev_id ) {
+		$dbw = wfGetDB( DB_MASTER );
+		$page_id = $title->getArticleID();
 
+		$dbw->update(
+			'approved_pages',
+			array(
+				'ap_approved_rev_id' => $rev_id
+			),
+			array( 'ap_page_id' => $page_id )
+		);
+
+		// Update "cache" in memory
+		self::$mApprovedRevIdForPage[ $page_id ]  = $rev_id;
+
+	}
+
+	public static function logUnapprovedSave( Title $title, User $user, $rev_id ) {
 		$new_rev_link = Linker::linkKnown( $title, $rev_id, array(), array( 'oldid' => $rev_id ) );
 
 		$action   = 'unapprovedsave';
@@ -373,7 +396,7 @@ class ApprovedRevs {
 	}
 
 	protected static function getThisRevisionID( Title $title ) {
-		$article = Article::newFromId( $title->getArticleID() );
+		$article = Article::newFromID( $title->getArticleID() );
 
 		return ( $article->isCurrent() ? $article->getRevIdFetched() : $article->getOldID() );
 	}
@@ -398,10 +421,9 @@ class ApprovedRevs {
 
 
 	public static function getRevStatusMsg( Title $title ) {
-		$article = Article::newFromId( $title->getArticleID() );
+		$article = Article::newFromID( $title->getArticleID() );
 
 		$approved_rev_id = self::getApprovedRevID( $title );
-		$current_rev     = self::getThisRevisionID( $title );
 
 		$latest_rev_link   = Linker::link( $title, 'לחצו לגרסה העדכנית של הדף' );
 		$approved_rev_link = Linker::link(

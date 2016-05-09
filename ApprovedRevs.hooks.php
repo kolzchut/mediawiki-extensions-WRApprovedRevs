@@ -50,15 +50,25 @@ class ApprovedRevsHooks {
 		$isWatch, $section, $flags, $revision, $status, $baseRevId
 	) {
 
+		if( is_null( $revision ) ) {
+			// Ignore null edits
+			return true;
+		}
+
 		$title = $article->getTitle();
 		$oldRevisionId = $revision->getParentId();
 
-		if( !is_null( $revision ) // The user actually changed the text
-		    && $oldRevisionId !== null // There's actually a previous revision
+		if( $oldRevisionId !== null // There's actually a previous revision
 		    && ApprovedRevs::isAssignedToProject( $title )
 			&& ApprovedRevs::getApprovedRevID( $title ) === $oldRevisionId  // said prev revision was approved
 		) {
-			ApprovedRevs::logUnapprovedSave( $title, $user, $revision->getId() );
+			if( $user->isAllowed( 'auto-reapproval-on-save' ) ) {
+				ApprovedRevs::performAutoReapproval( $title, $revision->getId() );
+	        } else {
+				ApprovedRevs::logUnapprovedSave( $title, $user, $revision->getId() );
+		    }
+			 
+			 
 		}
 
 		return true;
@@ -229,19 +239,6 @@ class ApprovedRevsHooks {
 		$trackingCat .= ApprovedRevs::isLatestRevisionApproved( $title ) ? '-approved' : '-unapproved';
 		$parserOutput->addTrackingCategory( $trackingCat, $title );
 		//ApprovedRevsHooks::$categoryAdded = true;
-		/*
-
-		//$projectName = ApprovedRevs::getProjectName( $title );
-		trackingCat = Title::makeTitleSafe( NS_CATEGORY, 'ערכים במיזם - ' . $projectName );
-		if ( $trackingCat ) {
-			// @TODO in MW1.25 use "addTrackingCategory", which moved to ParserOutput
-
-
-			parserOutput( $cat->getDBkey(), $sort );
-			//var_dump( $parseroutput->mCategories );
-
-		}
-		*/
 
 		return true;
 

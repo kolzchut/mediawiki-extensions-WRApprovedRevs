@@ -3,16 +3,20 @@
 if ( !defined( 'MEDIAWIKI' ) ) die();
 
 /**
+ *
+ * WikiRights ApprovedRevs extension
+ * Loosely based on https://www.mediawiki.org/wiki/Extension:ApprovedRevs by Yaron Koren
+ *
  * @file
  * @ingroup Extensions
  * @compat >= MW 1.21
  *
  * @author Dror S. [FFS]
+ * @license GNU General Public Licence 2.0 or later
  * @copyright © 2015 Dror S. & Kol-Zchut Ltd.
- * Loosely based on Extension:ApprovedRevs by Yaron Koren.
  */
 
-define( 'APPROVED_REVS_VERSION', '0.1.1' );
+define( 'APPROVED_REVS_VERSION', '0.1.2' );
 
 // credits
 $wgExtensionCredits['other'][] = array(
@@ -20,8 +24,9 @@ $wgExtensionCredits['other'][] = array(
 	'name'            => 'Approved Revisions For Kol-Zchut',
 	'version'         => APPROVED_REVS_VERSION,
 	'author'          => 'Dror S. [FFS] ([http://www.kolzchut.org.il Kol-Zchut])',
-	'url'             => 'http://www.kolzchut.org.il/he/Extension:WRApproved_Revs',
-	'descriptionmsg'  => 'approvedrevs-desc'
+	'url'             => 'https://github.com/kolzchut/mediawiki-extensions-WRApprovedRevs',
+	'descriptionmsg'  => 'approvedrevs-desc',
+	'license-name'    => 'GPL-2.0+'
 );
 
 // global variables
@@ -63,6 +68,8 @@ $wgAvailableRights[] = 'approveprojectonbehalf'; # assign a page to a project on
 $wgAvailableRights[] = 'seeprojectstatusalways'; # see status and banner even if $wgApprovedRevsShowOnlyToMembers is true
 $wgAvailableRights[] = 'useholocaustsearchfilter'; # Have a search filter by Holocaust category
 $wgAvailableRights[] = 'viewapprovedrevsspecialpage'; # Have a search filter by Holocaust category
+$wgAvailableRights[] = 'auto-reapproval-on-save'; # Automatically update revision number when making changes to an already-approved rev. Useful for e.g. bots.
+
 
 
 // user groups
