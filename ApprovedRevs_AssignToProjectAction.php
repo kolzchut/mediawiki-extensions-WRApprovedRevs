@@ -24,8 +24,10 @@
 
 class AssignToProjectAction extends FormAction {
 	private $old_project;
+	private $old_organization;
 	private $old_group;
 	private $project;
+	private $organization;
 	private $group;
 	private $reason;
 	
@@ -148,7 +150,7 @@ class AssignToProjectAction extends FormAction {
 	
 	public function onSuccess() {
 		$this->getTitle()->invalidateCache();
-		$this->getOutput()->redirect( $this->getTitle()->getFullUrl( $this->redirectParams ) );
+		$this->getOutput()->redirect( $this->getTitle()->getFullURL( $this->redirectParams ) );
 		//$this->getOutput()->redirect( $this->getTitle()->getFullUrl() );
 	}
 	
