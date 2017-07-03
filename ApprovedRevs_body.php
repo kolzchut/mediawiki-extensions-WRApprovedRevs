@@ -363,16 +363,15 @@ class ApprovedRevs {
 		$dbw = wfGetDB( DB_MASTER );
 		$page_id = $title->getArticleID();
 
-		$dbw->update(
+		$result = $dbw->update(
 			'approved_pages',
-			array(
-				'ap_approved_rev_id' => $rev_id
-			),
-			array( 'ap_page_id' => $page_id )
+			[ 'ap_approved_rev_id' => $rev_id ],
+			[ 'ap_page_id' => $page_id ],
+			__METHOD__
 		);
 
 		// Update "cache" in memory
-		self::$mApprovedRevIdForPage[ $page_id ]  = $rev_id;
+		self::$mApprovedRevIdForPage[ $page_id ] = $rev_id;
 
 	}
 

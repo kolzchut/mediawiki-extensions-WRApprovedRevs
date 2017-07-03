@@ -58,17 +58,15 @@ class ApprovedRevsHooks {
 		$title = $article->getTitle();
 		$oldRevisionId = $revision->getParentId();
 
-		if( $oldRevisionId !== null // There's actually a previous revision
+		if ( $oldRevisionId !== null // There's actually a previous revision
 		    && ApprovedRevs::isAssignedToProject( $title )
 			&& ApprovedRevs::getApprovedRevID( $title ) === $oldRevisionId  // said prev revision was approved
 		) {
-			if( $user->isAllowed( 'auto-reapproval-on-save' ) ) {
+			if ( $user->isAllowed( 'auto-reapproval-on-save' ) ) {
 				ApprovedRevs::performAutoReapproval( $title, $revision->getId() );
-	        } else {
+			} else {
 				ApprovedRevs::logUnapprovedSave( $title, $user, $revision->getId() );
 		    }
-			 
-			 
 		}
 
 		return true;
