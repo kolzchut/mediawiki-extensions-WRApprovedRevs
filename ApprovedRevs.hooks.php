@@ -17,14 +17,19 @@ class ApprovedRevsHooks {
 		$dir = __DIR__ . '/sql';
 
 		// For now, there's just a single SQL file for all DB types.
-		$updater->addExtensionUpdate(
-			array( 'addTable', 'approved_pages', "$dir/ApprovedRevs.sql", true )
+		$updater->addExtensionTable(
+			'approved_pages',
+			"$dir/ApprovedRevs.sql"
 		);
-		$updater->addExtensionUpdate(
-			array( 'modifyField', 'approved_pages', 'ap_user_group', "$dir/patch-ap_group-length-increase-255.sql", true )
+		$updater->modifyExtensionField(
+			'approved_pages',
+			'ap_user_group',
+			"$dir/patch-ap_group-length-increase-255.sql"
 		);
-		$updater->addExtensionUpdate(
-			array( 'addIndex', 'approved_pages', 'approved_pages_page_id', "$dir/patch-add-indices.sql", true )
+		$updater->addExtensionIndex(
+			'approved_pages',
+			'approved_pages_page_id',
+			"$dir/patch-add-indices.sql"
 		);
 
 		return true;
